@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.devsuperior.dscatalog.dto.CategoryDTO;
 import com.devsuperior.dscatalog.entities.Category;
 import com.devsuperior.dscatalog.repositories.CategoryRepository;
+import com.devsuperior.dscatalog.services.exceptions.EntityNotFoundException;
 
 // this annotation register this class as a component 
 // that will be part of the dependency injection system
@@ -27,4 +28,11 @@ public class CategoryService {
 		return list.stream().map(p -> new CategoryDTO(p)).collect(Collectors.toList());
 
 	}
+
+	@Transactional(readOnly = true)
+	public CategoryDTO findById(Long id) {		
+		return new CategoryDTO (repository.findById(id).orElseThrow(() -> new EntityNotFoundException("Cannot find requested category.")));
+	}
+	
+
 }
