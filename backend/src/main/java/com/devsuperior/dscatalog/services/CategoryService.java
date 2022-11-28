@@ -3,6 +3,8 @@ package com.devsuperior.dscatalog.services;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import javax.persistence.EntityNotFoundException;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -10,7 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.devsuperior.dscatalog.dto.CategoryDTO;
 import com.devsuperior.dscatalog.entities.Category;
 import com.devsuperior.dscatalog.repositories.CategoryRepository;
-import com.devsuperior.dscatalog.services.exceptions.EntityNotFoundException;
+import com.devsuperior.dscatalog.services.exceptions.ResourceNotFoundException;
 
 // this annotation register this class as a component 
 // that will be part of the dependency injection system
@@ -40,6 +42,20 @@ public class CategoryService {
 		entity.setName(categoryDTO.getName());
 		entity = repository.save(entity);       // reposity.save() returns a reference to object saved in DB
 		return new CategoryDTO(entity);
+	}
+	
+	@Transactional
+	public CategoryDTO update(Long id, CategoryDTO categoryDTO) {
+		try {
+		Category proxyEntity = repository.getReferenceById(id);
+		proxyEntity.setName(categoryDTO.getName());
+		proxyEntity = repository.save(proxyEntity);
+		return new CategoryDTO(proxyEntity);
+		}
+		catch (EntityNotFoundException e)
+		{
+			throw new ResourceNotFoundException("Error. Id not found : " + id);
+		}
 	}
 	
 
