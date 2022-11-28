@@ -33,6 +33,14 @@ public class CategoryService {
 	public CategoryDTO findById(Long id) {		
 		return new CategoryDTO (repository.findById(id).orElseThrow(() -> new EntityNotFoundException("Cannot find requested category.")));
 	}
+
+	@Transactional
+	public CategoryDTO insert(CategoryDTO categoryDTO) {
+		Category entity = new Category();
+		entity.setName(categoryDTO.getName());
+		entity = repository.save(entity);       // reposity.save() returns a reference to object saved in DB
+		return new CategoryDTO(entity);
+	}
 	
 
 }
