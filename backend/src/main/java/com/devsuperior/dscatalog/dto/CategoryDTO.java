@@ -40,6 +40,12 @@ public class CategoryDTO implements Serializable {
 		this.name = name;
 	}
 
+	@Override
+	public String toString() {
+		return "CategoryDTO [id=" + id + ", name=" + name + "]";
+	}
+
+	
 	
 	
 }

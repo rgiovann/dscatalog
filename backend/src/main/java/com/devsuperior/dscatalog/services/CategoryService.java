@@ -1,13 +1,12 @@
 package com.devsuperior.dscatalog.services;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
 import javax.persistence.EntityNotFoundException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,19 +24,20 @@ public class CategoryService {
 
 	@Autowired
 	private CategoryRepository repository;
-
+	
 	// ACID properties
 	@Transactional(readOnly = true)
-	public List<CategoryDTO> findAll() {
-		List<Category> list = repository.findAll();
-		return list.stream().map(p -> new CategoryDTO(p)).collect(Collectors.toList());
+	public Page<CategoryDTO> findAllPaged(PageRequest pageRequest) {
+		Page<Category> list = repository.findAll(pageRequest);
+		// Page already is an stream since Java 8.X, noo need to convert
+		return list.map(p -> new CategoryDTO(p));
 
 	}
 
 	@Transactional(readOnly = true)
 	public CategoryDTO findById(Long id) {
 		return new CategoryDTO(repository.findById(id)
-				.orElseThrow(() -> new EntityNotFoundException("Cannot find requested category.")));
+				.orElseThrow(() -> new ResourceNotFoundException("Error. Id not found: " + id)));
 	}
 
 	@Transactional
@@ -51,15 +51,41 @@ public class CategoryService {
 	@Transactional
 	public CategoryDTO update(Long id, CategoryDTO categoryDTO) {
 		try {
+			
 			Category proxyEntity = repository.getReferenceById(id);
 			proxyEntity.setName(categoryDTO.getName());
-			proxyEntity = repository.save(proxyEntity);
+			/*
+			 * -- https://www.baeldung.com/jpa-entity-manager-get-reference --
+			 * Surprisingly, the result of the running test method is still the same and 
+			 * we see the SELECT query remains. As we can see, Hibernate does execute a 
+			 * SELECT query when we use getReference() to update an entity field.
+			 * Therefore, using the getReference() method does not avoid the extra SELECT
+			 * query if we execute any setter of the entity proxy's fields.
+			 */
+			
+			/*
+			 *  -- https://vladmihalcea.com/jpa-persist-and-merge/ --
+			 *  The save method serves no purpose. Even if we remove it, Hibernate will still
+			 *   issue the UPDATE statement since the entity is managed and any state change 
+			 *   is propagated as long as the currently running EntityManager is open.
+			 * 
+			 */
+			proxyEntity = repository.save(proxyEntity);			
 			return new CategoryDTO(proxyEntity);
+			
 		} catch (EntityNotFoundException e) {
 			throw new ResourceNotFoundException("Error. Id not found : " + id);
 		}
 	}
 
+	/*
+	 * Persisting and deleting objects in JPA requires a transaction. That's why we should use 
+	 * a @Transactional annotation when using these derived delete queries, 
+	 * to make sure a transaction is running. 
+	 * This is explained in detail in the ORM with Spring documentation.
+	 * 
+	 */
+	@Transactional
 	public void delete(Long id) {
 		try {
 			repository.deleteById(id);
