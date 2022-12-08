@@ -36,9 +36,17 @@
 			<scope>runtime</scope>
 		</dependency>
 		<dependency>
+		<!-- Starter for testing Spring Boot applications 
+		with libraries including JUnit Jupiter, Hamcrest and Mockito -->
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
+			<exclusions> <!-- old junit versions -->
+				<exclusion>
+					<groupId>org.junit.vintage</groupId>
+					<artifactId>junit-vintage-engine</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 
 		<dependency>

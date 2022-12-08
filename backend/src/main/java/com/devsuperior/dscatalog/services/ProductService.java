@@ -19,6 +19,7 @@ import com.devsuperior.dscatalog.entities.Product;
 import com.devsuperior.dscatalog.repositories.CategoryRepository;
 import com.devsuperior.dscatalog.repositories.ProductRepository;
 import com.devsuperior.dscatalog.services.exceptions.DatabaseException;
+import com.devsuperior.dscatalog.services.exceptions.NestedResourceNotFoundException;
 import com.devsuperior.dscatalog.services.exceptions.ResourceNotFoundException;
 
 // this annotation register this class as a component 
@@ -29,10 +30,10 @@ public class ProductService {
 
 	@Autowired
 	private ProductRepository repository;
-	
+
 	@Autowired
 	private CategoryRepository categoryRepository;
-	
+
 	// ACID properties
 	@Transactional(readOnly = true)
 	public Page<ProductDTO> findAllPaged(Pageable pageRequest) {

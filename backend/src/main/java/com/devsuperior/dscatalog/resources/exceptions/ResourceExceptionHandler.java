@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import com.devsuperior.dscatalog.services.exceptions.DatabaseException;
+import com.devsuperior.dscatalog.services.exceptions.NestedResourceNotFoundException;
 import com.devsuperior.dscatalog.services.exceptions.ResourceNotFoundException;
 
 @ControllerAdvice
@@ -27,6 +28,22 @@ public class ResourceExceptionHandler {
 		return ResponseEntity.status(status).body(err);
 		
 	}
+	
+	
+	@ExceptionHandler(NestedResourceNotFoundException.class)
+	public ResponseEntity<StandardError> entityNotFound(NestedResourceNotFoundException e, HttpServletRequest request){
+		HttpStatus status = HttpStatus.NOT_FOUND;
+		StandardError err = new StandardError();
+		err.setTimestamp(Instant.now());
+		err.setStatus(status.value());
+		err.setError("Resource not found.");
+		err.setMessage(e.getMessage());
+		err.setPath(request.getRequestURI());
+		return ResponseEntity.status(status).body(err);
+		
+	}
+	
+	
 	
 	@ExceptionHandler(DatabaseException.class)
 	public ResponseEntity<StandardError> databaseException(DatabaseException e, HttpServletRequest request){
