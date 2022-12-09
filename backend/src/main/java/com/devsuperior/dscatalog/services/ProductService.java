@@ -53,7 +53,7 @@ public class ProductService {
 	@Transactional
 	public ProductDTO insert(ProductDTO productDTO) {
 		Product entity = new Product();
-		copyDtoToEntity(productDTO,entity);
+		copyDtoToEntity(productDTO, entity);
 		entity = repository.save(entity); // reposity.save() returns a reference to object saved in DB
 		return new ProductDTO(entity);
 	}
@@ -61,39 +61,39 @@ public class ProductService {
 	@Transactional
 	public ProductDTO update(Long id, ProductDTO productDTO) {
 		try {
-			
+
 			Product proxyEntity = repository.getReferenceById(id);
-			copyDtoToEntity(productDTO,proxyEntity);
+			copyDtoToEntity(productDTO, proxyEntity);
 			/*
-			 * -- https://www.baeldung.com/jpa-entity-manager-get-reference --
-			 * Surprisingly, the result of the running test method is still the same and 
-			 * we see the SELECT query remains. As we can see, Hibernate does execute a 
-			 * SELECT query when we use getReference() to update an entity field.
-			 * Therefore, using the getReference() method does not avoid the extra SELECT
-			 * query if we execute any setter of the entity proxy's fields.
+			 * -- https://www.baeldung.com/jpa-entity-manager-get-reference -- Surprisingly,
+			 * the result of the running test method is still the same and we see the SELECT
+			 * query remains. As we can see, Hibernate does execute a SELECT query when we
+			 * use getReference() to update an entity field. Therefore, using the
+			 * getReference() method does not avoid the extra SELECT query if we execute any
+			 * setter of the entity proxy's fields.
 			 */
-			
+
 			/*
-			 *  -- https://vladmihalcea.com/jpa-persist-and-merge/ --
-			 *  The save method serves no purpose. Even if we remove it, Hibernate will still
-			 *  issue the UPDATE statement since the entity is managed and any state change 
-			 *  is propagated as long as the currently running EntityManager is open.
+			 * -- https://vladmihalcea.com/jpa-persist-and-merge/ -- The save method serves
+			 * no purpose. Even if we remove it, Hibernate will still issue the UPDATE
+			 * statement since the entity is managed and any state change is propagated as
+			 * long as the currently running EntityManager is open.
 			 * 
 			 */
-			
-			proxyEntity = repository.save(proxyEntity);			
+
+			proxyEntity = repository.save(proxyEntity);
 			return new ProductDTO(proxyEntity);
-			
+
 		} catch (EntityNotFoundException e) {
 			throw new ResourceNotFoundException("Error. Id not found : " + id);
 		}
 	}
 
 	/*
-	 * Persisting and deleting objects in JPA requires a transaction. That's why we should use 
-	 * a @Transactional annotation when using these derived delete queries, 
-	 * to make sure a transaction is running. 
-	 * This is explained in detail in the ORM with Spring documentation.
+	 * Persisting and deleting objects in JPA requires a transaction. That's why we
+	 * should use a @Transactional annotation when using these derived delete
+	 * queries, to make sure a transaction is running. This is explained in detail
+	 * in the ORM with Spring documentation.
 	 * 
 	 */
 	@Transactional
@@ -107,18 +107,21 @@ public class ProductService {
 		}
 
 	}
-	
+
 	private void copyDtoToEntity(ProductDTO dto, Product entity) {
 		entity.setName(dto.getName());
 		entity.setDescription(dto.getDescription());
 		entity.setDate(dto.getDate());
 		entity.setImgUrl(dto.getImgUrl());
-		entity.setPrice(dto.getPrice());	
+		entity.setPrice(dto.getPrice());
 		entity.getCategories().clear();
-		for ( CategoryDTO catDTO : dto.getCategories())
-		{
-			 Category category = categoryRepository.getReferenceById(catDTO.getId());
-			 entity.getCategories().add(category);
+		for (CategoryDTO catDTO : dto.getCategories()) {
+			try {
+				Category category = categoryRepository.getReferenceById(catDTO.getId());
+				entity.getCategories().add(category);
+			} catch (EntityNotFoundException e) {
+				throw new NestedResourceNotFoundException("Error. Nested resource Id not found : " + catDTO.getId());
+			}
 		}
 	}
 }
