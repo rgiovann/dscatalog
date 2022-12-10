@@ -30,24 +30,35 @@
 			<artifactId>h2</artifactId>
 			<scope>runtime</scope>
 		</dependency>
+		
 		<dependency>
 			<groupId>org.postgresql</groupId>
 			<artifactId>postgresql</artifactId>
 			<scope>runtime</scope>
 		</dependency>
+		
 		<dependency>
-		<!-- Starter for testing Spring Boot applications 
+			<groupId>org.modelmapper</groupId>
+			<artifactId>modelmapper</artifactId>
+			<version>3.1.0</version>
+		</dependency>
+
+
+		<dependency>
+			<!-- Starter for testing Spring Boot applications 
 		with libraries including JUnit Jupiter, Hamcrest and Mockito -->
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
-			<exclusions> <!-- old junit versions -->
+			<exclusions>
+				<!-- old junit versions -->
 				<exclusion>
 					<groupId>org.junit.vintage</groupId>
 					<artifactId>junit-vintage-engine</artifactId>
 				</exclusion>
 			</exclusions>
 		</dependency>
+
 
 		<dependency>
 			<groupId>org.springframework.boot</groupId>

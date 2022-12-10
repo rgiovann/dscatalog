@@ -14,13 +14,14 @@ import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.modelmapper.ModelMapper;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import com.devsuperior.dscatalog.dto.CategoryDTO;
 import com.devsuperior.dscatalog.dto.ProductDTO;
 import com.devsuperior.dscatalog.entities.Category;
 import com.devsuperior.dscatalog.entities.Product;
@@ -43,13 +44,18 @@ public class ProductServicesTests {
 	@Mock
 	private CategoryRepository categoryRepository;
 	
+	@Mock
+    private ModelMapper modelMapper;
+
+
+	
 	private long productExistingId;
 	private long productNonExistingId;
 	private long productDependentId;
 	private PageImpl<Product> page;
 	private Product product;
-	private ProductDTO productDTO;
-	private ProductDTO producBadtDTO;
+	private ProductDTO productGooDDTO;
+	private ProductDTO productBadDTO;
 	
 	private Category category;
 	private long nonExistingCategoryId;
@@ -61,17 +67,23 @@ public class ProductServicesTests {
 		
 		productNonExistingId = 999;   // esses valores não importam pois é simulado pelo Mockito
 		productDependentId = 3L;
-		product = Factory.createProduct();
-		productDTO = new ProductDTO(product,product.getCategories());
-		category = Factory.createCategory();
-		page = new PageImpl<Product>(List.of(product));
-		existingCategoryId = Factory.getExistingCategoryId();
-		nonExistingCategoryId = 100L;
-		producBadtDTO = new ProductDTO(product,product.getCategories());
-		producBadtDTO.getCategories().clear();
-		producBadtDTO.getCategories().add(new CategoryDTO(nonExistingCategoryId,""));
-		productExistingId = productDTO.getId();
 		
+		product = Factory.createProduct();
+		
+		productGooDDTO = Factory.createProductDTO();
+		productGooDDTO.getCategories().add(Factory.createGoodDTOCategory());
+		
+		page = new PageImpl<Product>(List.of(product));
+		existingCategoryId = Factory.createGoodDTOCategory().getId();
+		
+		
+		productBadDTO = Factory.createProductDTO();
+		productBadDTO.getCategories().add(Factory.createBadDTOCategory());
+		nonExistingCategoryId = Factory.createBadDTOCategory().getId();
+		
+		productExistingId = productGooDDTO.getId();
+		
+	
 		Mockito.when( productRepository.findAll((Pageable) ArgumentMatchers.any())).thenReturn(page);
 		 
 		Mockito.when(productRepository.save(ArgumentMatchers.any())).thenReturn(product);
@@ -93,19 +105,22 @@ public class ProductServicesTests {
 		Mockito.doThrow(ResourceNotFoundException.class).when(productRepository).deleteById(productNonExistingId);
 		
 		Mockito.doThrow(DatabaseException.class).when(productRepository).deleteById(productDependentId);
+		
+		Mockito.when(modelMapper.map(ArgumentMatchers.any(Product.class), ArgumentMatchers.eq(ProductDTO.class))).thenReturn(productGooDDTO);
+		
+		Mockito.when(modelMapper.map(ArgumentMatchers.any(ProductDTO.class), ArgumentMatchers.eq(Product.class))).thenReturn(product);
 
 
 	}
 	
-
 	
     @DisplayName("001 - update should thrown ResourceNotFound exception when product id does not exist.")
 	@Test
 	public void updateShouldThrowResourceNotFoundExceptionWhenIdDoesNotExists() {
 		
- 		Assertions.assertThrows(ResourceNotFoundException.class,() -> {service.update(productNonExistingId,productDTO);});
+ 		Assertions.assertThrows(ResourceNotFoundException.class,() -> {service.update(productNonExistingId,productGooDDTO);});
 
-		Mockito.verify(productRepository,Mockito.times(1)).getReferenceById(productNonExistingId);
+		Mockito.verify(productRepository,Mockito.times(1)).findById(productNonExistingId);
 		
 	}
 	
@@ -113,12 +128,12 @@ public class ProductServicesTests {
     @DisplayName("002 - update should return ProductDTO when product id does exists.")
 	@Test
 	public void updateShouldReturnProductDTOWhenIdExists() {
-		
-		ProductDTO result = service.update(productExistingId,productDTO);
+    			
+		ProductDTO result = service.update(productExistingId,productGooDDTO);
 		
 		Assertions.assertNotNull(result);
 		
-		Mockito.verify(productRepository,Mockito.times(1)).getReferenceById(productExistingId);
+		Mockito.verify(productRepository,Mockito.times(1)).findById(productExistingId);
 		
 		Mockito.verify(productRepository,Mockito.times(1)).save(ArgumentMatchers.any());
 		
@@ -198,7 +213,7 @@ public class ProductServicesTests {
 	@Test
 	public void insertShouldReturnProductDTO() {
 		
-		ProductDTO result = service.insert(productDTO);
+		ProductDTO result = service.insert(productGooDDTO);
 		
 		Assertions.assertNotNull(result);
 		
@@ -212,10 +227,10 @@ public class ProductServicesTests {
     @DisplayName("010 - update should thrown NestedResourceNotFoundException exception when category id does not exist.")
 	@Test
 	public void updateShouldThrowNestedResourceNotFoundExceptionWhenCategoryIdDoesNotExists() {
-		
- 		Assertions.assertThrows(NestedResourceNotFoundException.class,() -> {service.update(productExistingId,producBadtDTO);});
+    		
+ 		Assertions.assertThrows(NestedResourceNotFoundException.class,() -> {service.update(productExistingId,productBadDTO);});
 
-		Mockito.verify(productRepository,Mockito.times(1)).getReferenceById(productExistingId);
+		Mockito.verify(productRepository,Mockito.times(1)).findById(productExistingId);
 		
 		Mockito.verify(categoryRepository,Mockito.times(1)).getReferenceById(nonExistingCategoryId);
 
@@ -226,7 +241,7 @@ public class ProductServicesTests {
 	@Test
 	public void insertShouldTShouldThrowNestedResourceNotFoundExceptionWhenCategoryIdDoesNotExists() {
 		
- 		Assertions.assertThrows(NestedResourceNotFoundException.class,() -> {service.insert(producBadtDTO);});
+ 		Assertions.assertThrows(NestedResourceNotFoundException.class,() -> {service.insert(productBadDTO);});
 			
 		Mockito.verify(categoryRepository,Mockito.times(1)).getReferenceById(nonExistingCategoryId);
 

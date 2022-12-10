@@ -15,6 +15,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,27 +45,34 @@ public class ProductResourceTests {
 
 	@Autowired
 	private ObjectMapper objectMapper;
-
+	
 	private PageImpl<ProductDTO> page;
 	private ProductDTO productDTO;
+	
 	private long existingId;
 	private long nonExistingId;
 	private long dependentId;
 	private long productBadCategoryId;
 	private String jsonBody;
+	private String jsonBadBody;
+	private ProductDTO productBadDTO;
 
 	@BeforeEach
 	void setUp() throws Exception {
 
 		productDTO = Factory.createProductDTO();
-
-		existingId = Factory.getExistingProductId();
+		productDTO.getCategories().add(Factory.createGoodDTOCategory());
+		existingId = productDTO.getId();
 		nonExistingId = 100L;
 		dependentId = 50L;
-		productBadCategoryId = 200L;
-
+		productBadDTO = Factory.createProductDTO();
+		productBadDTO.getCategories().add(Factory.createBadDTOCategory());
+		productBadDTO.setId(productBadCategoryId);
+		productBadCategoryId = Factory.createBadDTOCategory().getId();
+		
 		page = new PageImpl<>(List.of(productDTO));
 
+		
 		when(service.findAllPaged(ArgumentMatchers.any())).thenReturn(page);
 
 		when(service.findById(existingId)).thenReturn(productDTO);
@@ -78,17 +86,17 @@ public class ProductResourceTests {
 		doNothing().when(service).delete(existingId);
 		doThrow(ResourceNotFoundException.class).when(service).delete(nonExistingId);
 		doThrow(DatabaseException.class).when(service).delete(dependentId);
-		
-		
- 		//when(service.insert(any(ProductDTO.class))).thenReturn(productDTO); IT WORKS!! (wtf)
-		when(service.insert( productDTO)).thenReturn(productDTO);   // IT DOESNT WORK!
 
-		
+ 		when(service.insert( productDTO)).thenReturn(productDTO);  
+		when(service.insert( productBadDTO)).thenThrow(NestedResourceNotFoundException.class);   
+
 		jsonBody = objectMapper.writeValueAsString(productDTO);
+		jsonBadBody = objectMapper.writeValueAsString(productBadDTO);
 
 
 	}
 
+    @DisplayName("001 - delete should return HttpStatus.NO_CONTENT (204) when id exists.")
 	@Test
 	public void deleteShouldReturnNoContentWhenExistingId() throws Exception {
 
@@ -97,6 +105,7 @@ public class ProductResourceTests {
 		result.andExpect(status().isNoContent());
 	}
 
+    @DisplayName("002 - delete should return HttpStatus.NOT_FOUND (404) when id does not exist.")
 	@Test
 	public void deleteShouldReturnNotFoundWhenExistingId() throws Exception {
 
@@ -105,7 +114,8 @@ public class ProductResourceTests {
 
 		result.andExpect(status().isNotFound());
 	}
-	
+
+    @DisplayName("003 - delete should return HttpStatus.BAD_REQUEST (400) when dependent id.")
 	@Test
 	public void deleteShouldReturnBadRequestWhenDependentId() throws Exception {
 
@@ -114,7 +124,19 @@ public class ProductResourceTests {
 
 		result.andExpect(status().isBadRequest());
 	}
-	
+
+    @DisplayName("004 - insert should return HttpStatus.NOT_FOUND (404) when category id does not exist.")
+	@Test
+	public void insertShouldReturnNotFoundWhenCategoryIdDoesNotExist() throws Exception {
+
+		ResultActions result = mockMvc.perform(post("/products").content(jsonBadBody)
+				.contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON));
+
+		result.andExpect(status().isNotFound());
+
+	}
+    
+    @DisplayName("005 - insert should return HttpStatus.CREATED (201).")
 	@Test
 	public void insertShouldReturnProductDTOCreated() throws Exception {
 
@@ -124,10 +146,11 @@ public class ProductResourceTests {
 		result.andExpect(status().isCreated());
 		result.andExpect(jsonPath("$.id").exists());
 		result.andExpect(jsonPath("$.name").exists());
-		result.andExpect(jsonPath("$.description").exists());		
+		result.andExpect(jsonPath("$.description").exists());
 	}
 	
-
+	
+    @DisplayName("006 - findAll should return HttpStatus.OK (200).")	
 	@Test
 	public void findAllShouldReturnPage() throws Exception {
 
@@ -136,8 +159,9 @@ public class ProductResourceTests {
 		result.andExpect(status().isOk());
 	}
 
+    @DisplayName("007 - findById should return HttpStatus.OK (200) when id exists.")	
 	@Test
-	public void findByIdShouldReturnProductWhenIdExists() throws Exception {
+	public void findByIdShouldReturnProductDTOWhenIdExists() throws Exception {
 
 		ResultActions result = mockMvc.perform(get("/products/{id}", existingId).accept(MediaType.APPLICATION_JSON));
 
@@ -148,6 +172,7 @@ public class ProductResourceTests {
 
 	}
 
+    @DisplayName("008 - findById should return HttpStatus.NOT_FOUND (404) when id does not exists.")	
 	@Test
 	public void findByIdShouldReturnNotFoundtWhenIdDoesNotExists() throws Exception {
 
@@ -155,10 +180,10 @@ public class ProductResourceTests {
 
 		result.andExpect(status().isNotFound());
 	}
-
+    
+    @DisplayName("009 - update should return HttpStatus.OK (200) when id exists.")	
 	@Test
 	public void updateIdShouldReturnProducDTOtWhenIdExists() throws Exception {
-
 
 		ResultActions result = mockMvc.perform(put("/products/{id}", existingId).content(jsonBody)
 				.contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON));
@@ -170,10 +195,9 @@ public class ProductResourceTests {
 
 	}
 
+    @DisplayName("010 - update should return HttpStatus.NOT_FOUND (404) when id does not exists.")	
 	@Test
-	public void updateIdShouldReturnNotFoundtWhenIdDoesNotExists() throws Exception {
-
-		String jsonBody = objectMapper.writeValueAsString(productDTO);
+	public void updateShouldReturnNotFoundtWhenIdDoesNotExists() throws Exception {
 
 		ResultActions result = mockMvc.perform(put("/products/{id}", nonExistingId).content(jsonBody)
 				.contentType(MediaType.APPLICATION_JSON).accept(MediaType.APPLICATION_JSON));
@@ -181,8 +205,9 @@ public class ProductResourceTests {
 		result.andExpect(status().isNotFound());
 	}
 
+    @DisplayName("011 - update should return HttpStatus.NOT_FOUND (404) when category id does not exists.")	
 	@Test
-	public void updateIdShouldReturnNotFoundtWhenCategoryIdDoesNotExists() throws Exception {
+	public void updateShouldReturnNotFoundtWhenCategoryIdDoesNotExists() throws Exception {
 
 		String jsonBody = objectMapper.writeValueAsString(productDTO);
 

@@ -4,6 +4,7 @@ import java.util.Optional;
 
 import javax.persistence.EntityNotFoundException;
 
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -33,37 +34,83 @@ public class ProductService {
 
 	@Autowired
 	private CategoryRepository categoryRepository;
+	
+    @Autowired
+    private ModelMapper modelMapper;
 
 	// ACID properties
+//	@Transactional(readOnly = true)
+//	public Page<ProductDTO> findAllPaged(Pageable pageRequest) {
+//		Page<Product> list = repository.findAll(pageRequest);
+//		// Page already is an stream since Java 8.X, noo need to convert
+//		return list.map(p -> new ProductDTO(p));
+//
+//	}
+    
+    //****************************************
+    // Now using modelMapper model
+    //****************************************
+    
+	//ACID properties
 	@Transactional(readOnly = true)
 	public Page<ProductDTO> findAllPaged(Pageable pageRequest) {
 		Page<Product> list = repository.findAll(pageRequest);
 		// Page already is an stream since Java 8.X, noo need to convert
-		return list.map(p -> new ProductDTO(p));
+		return list.map(p -> modelMapper.map(p, ProductDTO.class));
 
 	}
+    
 
+//	@Transactional(readOnly = true)
+//	public ProductDTO findById(Long id) {
+//		Optional<Product> obj = repository.findById(id);
+//		Product entity = obj.orElseThrow(() -> new ResourceNotFoundException("Error. Id not found: " + id));
+//		return new ProductDTO(entity, entity.getCategories());
+//	}
+	
+    //****************************************
+    // Now using modelMapper model
+    //****************************************
+	
 	@Transactional(readOnly = true)
 	public ProductDTO findById(Long id) {
 		Optional<Product> obj = repository.findById(id);
 		Product entity = obj.orElseThrow(() -> new ResourceNotFoundException("Error. Id not found: " + id));
-		return new ProductDTO(entity, entity.getCategories());
+		ProductDTO productDTO = modelMapper.map(entity, ProductDTO.class);
+		productDTO.setCategoriesProductDTO(entity.getCategories());
+		return productDTO;
 	}
-
+	
+    //****************************************
+    // Now using modelMapper model
+    //****************************************
+	
 	@Transactional
 	public ProductDTO insert(ProductDTO productDTO) {
 		Product entity = new Product();
+		entity = modelMapper.map(productDTO, Product.class);
 		copyDtoToEntity(productDTO, entity);
 		entity = repository.save(entity); // reposity.save() returns a reference to object saved in DB
-		return new ProductDTO(entity);
+		return modelMapper.map(entity, ProductDTO.class);
 	}
 
+    //****************************************
+    // Now using modelMapper model
+    //****************************************
+	
 	@Transactional
 	public ProductDTO update(Long id, ProductDTO productDTO) {
-		try {
 
-			Product proxyEntity = repository.getReferenceById(id);
-			copyDtoToEntity(productDTO, proxyEntity);
+			Optional<Product> obj = repository.findById(id);
+			Product entity = obj.orElseThrow(() -> new ResourceNotFoundException("Error. Id not found: " + id));
+			
+			entity = modelMapper.map(productDTO, Product.class);
+			entity.setId(id);
+					
+			copyDtoToEntity(productDTO, entity);
+			
+			//Product proxyEntity = repository.getReferenceById(id);
+			
 			/*
 			 * -- https://www.baeldung.com/jpa-entity-manager-get-reference -- Surprisingly,
 			 * the result of the running test method is still the same and we see the SELECT
@@ -81,12 +128,9 @@ public class ProductService {
 			 * 
 			 */
 
-			proxyEntity = repository.save(proxyEntity);
-			return new ProductDTO(proxyEntity);
-
-		} catch (EntityNotFoundException e) {
-			throw new ResourceNotFoundException("Error. Id not found : " + id);
-		}
+			entity = repository.save(entity);
+			return modelMapper.map(entity, ProductDTO.class);
+ 
 	}
 
 	/*
@@ -109,12 +153,7 @@ public class ProductService {
 	}
 
 	private void copyDtoToEntity(ProductDTO dto, Product entity) {
-		entity.setName(dto.getName());
-		entity.setDescription(dto.getDescription());
-		entity.setDate(dto.getDate());
-		entity.setImgUrl(dto.getImgUrl());
-		entity.setPrice(dto.getPrice());
-		entity.getCategories().clear();
+
 		for (CategoryDTO catDTO : dto.getCategories()) {
 			try {
 				Category category = categoryRepository.getReferenceById(catDTO.getId());
