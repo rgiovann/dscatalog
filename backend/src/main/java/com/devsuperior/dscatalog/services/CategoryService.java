@@ -88,7 +88,7 @@ public class CategoryService {
 	 * This is explained in detail in the ORM with Spring documentation.
 	 * 
 	 */
-	@Transactional
+	//@Transactional
 	public void delete(Long id) {
 		try {
 			repository.deleteById(id);

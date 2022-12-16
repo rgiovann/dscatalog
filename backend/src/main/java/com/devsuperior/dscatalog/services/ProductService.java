@@ -140,7 +140,7 @@ public class ProductService {
 	 * in the ORM with Spring documentation.
 	 * 
 	 */
-	@Transactional
+	//@Transactional
 	public void delete(Long id) {
 		try {
 			repository.deleteById(id);
