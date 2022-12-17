@@ -159,7 +159,7 @@ public class ProductService {
 				Category category = categoryRepository.getReferenceById(catDTO.getId());
 				entity.getCategories().add(category);
 			} catch (EntityNotFoundException e) {
-				throw new NestedResourceNotFoundException("Error. Nested resource Id not found : " + catDTO.getId());
+				throw new NestedResourceNotFoundException("Error. Category id not found : " + catDTO.getId());
 			}
 		}
 	}

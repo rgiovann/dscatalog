@@ -16,53 +16,51 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import com.devsuperior.dscatalog.dto.CategoryDTO;
-import com.devsuperior.dscatalog.services.CategoryService;
+import com.devsuperior.dscatalog.dto.UserDTO;
+import com.devsuperior.dscatalog.services.UserService;
 
 // Rest Controller (API)
 @RestController
-@RequestMapping(value = "/categories")
-public class CategoryResource {
+@RequestMapping(value = "/users")
+public class UserResource {
 
 	@Autowired
-	private CategoryService service;
+	private UserService service;
 
 	@GetMapping
-	public ResponseEntity<Page<CategoryDTO>> findAll(Pageable pageable
-			
-			) {
+	public ResponseEntity<Page<UserDTO>> findAll( Pageable pageable) {
 	     // http request direction is String, Direction is an enumeration type (so the need of valueOf)
-
-		Page<CategoryDTO> list = service.findAllPaged(pageable);
+ 		
+		Page<UserDTO> list = service.findAllPaged(pageable);
 		return ResponseEntity.ok().body(list);
 
 	}
 
 	@GetMapping(value = "/{id}")
-	public ResponseEntity<CategoryDTO> findById(@PathVariable Long id) {
-		CategoryDTO categoryDTO = service.findById(id);
-		return ResponseEntity.ok().body(categoryDTO);
+	public ResponseEntity<UserDTO> findById(@PathVariable Long id) {
+		UserDTO productDTO = service.findById(id);
+		return ResponseEntity.ok().body(productDTO);
 
 	}
 	
 	@PostMapping
-	public ResponseEntity<CategoryDTO> insert(@RequestBody CategoryDTO categoryDTO){
-		categoryDTO = service.insert(categoryDTO);
+	public ResponseEntity<UserDTO> insert(@RequestBody UserDTO productDTO){
+		productDTO = service.insert(productDTO);
 		URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}")
-				.buildAndExpand(categoryDTO.getId()).toUri();
-		return ResponseEntity.created(uri).body(categoryDTO);
+				.buildAndExpand(productDTO.getId()).toUri();
+		return ResponseEntity.created(uri).body(productDTO);
 		
 	}
 	
 	@PutMapping(value = "/{id}")
-	public ResponseEntity<CategoryDTO> update(@PathVariable Long id, @RequestBody CategoryDTO categoryDTO){
-		categoryDTO = service.update(id, categoryDTO);
-		return ResponseEntity.ok().body(categoryDTO);
+	public ResponseEntity<UserDTO> update(@PathVariable Long id, @RequestBody UserDTO productDTO){
+		productDTO = service.update(id, productDTO);
+		return ResponseEntity.ok().body(productDTO);
 		
 	}
 	
 	@DeleteMapping(value = "/{id}")
-	public ResponseEntity<CategoryDTO> delete(@PathVariable Long id){
+	public ResponseEntity<UserDTO> delete(@PathVariable Long id){
 		service.delete(id);
 		return ResponseEntity.noContent().build();
 		
