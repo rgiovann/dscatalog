@@ -27,6 +27,7 @@ public class User implements Serializable{
 	private long id;
 	private String firstName;
 	private String lastName;
+	
 	@Column(unique = true)   // email cant repeat
 	private String email;
 	private String password;

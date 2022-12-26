@@ -66,11 +66,12 @@ public class UserService {
 	}
 
 	@Transactional
-	public UserDTO update(Long id, UserDTO usertDTO) {
+	public UserDTO update(Long id, UserInsertDTO userInsertDTO) {
 		Optional<User> obj = userRepository.findById(id);
 		User entity = obj.orElseThrow(() -> new ResourceNotFoundException("Error. Id not found: " + id));
-		entity = DTOToEntity(usertDTO);
+		entity = DTOToEntity(userInsertDTO);
 		entity.setId(id);
+		entity.setPassword(pwdEncoder.encode(userInsertDTO.getPassword()));
 		entity = userRepository.save(entity);
 		return EntityToDTO(entity);
 
