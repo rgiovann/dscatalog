@@ -91,13 +91,13 @@ public class ProductServicesTests {
 		
 		Mockito.when(productRepository.findById(productNonExistingId)).thenReturn(Optional.empty());
 		
-		Mockito.when(productRepository.getReferenceById(productExistingId)).thenReturn(product);
+		Mockito.when(productRepository.getOne(productExistingId)).thenReturn(product);
 		
-		Mockito.when(productRepository.getReferenceById(productNonExistingId)).thenThrow(EntityNotFoundException.class);
+		Mockito.when(productRepository.getOne(productNonExistingId)).thenThrow(EntityNotFoundException.class);
 		
-		Mockito.when(categoryRepository.getReferenceById(existingCategoryId)).thenReturn(category);	
+		Mockito.when(categoryRepository.getOne(existingCategoryId)).thenReturn(category);	
  		
-		Mockito.when(categoryRepository.getReferenceById(nonExistingCategoryId)).thenThrow(NestedResourceNotFoundException.class);
+		Mockito.when(categoryRepository.getOne(nonExistingCategoryId)).thenThrow(NestedResourceNotFoundException.class);
 			
 		Mockito.doNothing().when(productRepository).deleteById(productExistingId);
 		
@@ -136,7 +136,7 @@ public class ProductServicesTests {
 		
 		Mockito.verify(productRepository,Mockito.times(1)).save(ArgumentMatchers.any());
 		
-		Mockito.verify(categoryRepository,Mockito.times(1)).getReferenceById(ArgumentMatchers.any());
+		Mockito.verify(categoryRepository,Mockito.times(1)).getOne(ArgumentMatchers.any());
 
 	}
 	
@@ -218,7 +218,7 @@ public class ProductServicesTests {
 		
 		Mockito.verify(productRepository,Mockito.times(1)).save(ArgumentMatchers.any());
 		
-		Mockito.verify(categoryRepository,Mockito.times(1)).getReferenceById(existingCategoryId);
+		Mockito.verify(categoryRepository,Mockito.times(1)).getOne(existingCategoryId);
 
 
 	}
@@ -231,7 +231,7 @@ public class ProductServicesTests {
 
 		Mockito.verify(productRepository,Mockito.times(1)).findById(productExistingId);
 		
-		Mockito.verify(categoryRepository,Mockito.times(1)).getReferenceById(nonExistingCategoryId);
+		Mockito.verify(categoryRepository,Mockito.times(1)).getOne(nonExistingCategoryId);
 
 	}   
     
@@ -242,7 +242,7 @@ public class ProductServicesTests {
 		
  		Assertions.assertThrows(NestedResourceNotFoundException.class,() -> {service.insert(productBadDTO);});
 			
-		Mockito.verify(categoryRepository,Mockito.times(1)).getReferenceById(nonExistingCategoryId);
+		Mockito.verify(categoryRepository,Mockito.times(1)).getOne(nonExistingCategoryId);
 
 
 	}

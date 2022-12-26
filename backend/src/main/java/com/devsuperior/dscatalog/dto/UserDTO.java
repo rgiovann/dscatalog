@@ -4,8 +4,6 @@ import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.devsuperior.dscatalog.entities.User;
-
 public class UserDTO implements Serializable{
 	
  

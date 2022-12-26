@@ -4,6 +4,7 @@ import java.time.Instant;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.springframework.data.mapping.PropertyReferenceException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -62,10 +63,21 @@ public class ResourceExceptionHandler {
 	// handle bad JSON formats in PUT/POST messages (not throwable)
 	@ExceptionHandler(HttpMessageNotReadableException.class)
 	public ResponseEntity<StandardError> jsonError(RuntimeException e, HttpServletRequest request) {
-		String error = "Could not understand HTTP message.";
+		String error = "I was not able to understand HTTP message body.";
 		HttpStatus status = HttpStatus.BAD_REQUEST;
 		StandardError err = new StandardError(Instant.now(), status.value(), error, e.getMessage(),
 				request.getRequestURI());
 		return ResponseEntity.status(status).body(err);
 	}
+	
+	// handle bad HTTP parameters (not throwable)
+	@ExceptionHandler(PropertyReferenceException.class)
+	public ResponseEntity<StandardError> propertyReference(PropertyReferenceException e, HttpServletRequest request) {
+		String error = "I was not able to understand HTTP request parameters.";
+		HttpStatus status = HttpStatus.UNPROCESSABLE_ENTITY;
+		StandardError err = new StandardError(Instant.now(), status.value(), error, e.getMessage(),
+				request.getRequestURI());
+		return ResponseEntity.status(status).body(err);
+	}
+	
 }

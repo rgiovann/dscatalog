@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import com.devsuperior.dscatalog.dto.UserDTO;
+import com.devsuperior.dscatalog.dto.UserInsertDTO;
 import com.devsuperior.dscatalog.services.UserService;
 
 // Rest Controller (API)
@@ -38,24 +39,24 @@ public class UserResource {
 
 	@GetMapping(value = "/{id}")
 	public ResponseEntity<UserDTO> findById(@PathVariable Long id) {
-		UserDTO productDTO = service.findById(id);
-		return ResponseEntity.ok().body(productDTO);
+		UserDTO userDTO = service.findById(id);
+		return ResponseEntity.ok().body(userDTO);
 
 	}
 	
 	@PostMapping
-	public ResponseEntity<UserDTO> insert(@RequestBody UserDTO productDTO){
-		productDTO = service.insert(productDTO);
+	public ResponseEntity<UserDTO> insert(@RequestBody UserInsertDTO userInsertDTO){
+		UserDTO userDTO = service.insert(userInsertDTO);
 		URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}")
-				.buildAndExpand(productDTO.getId()).toUri();
-		return ResponseEntity.created(uri).body(productDTO);
+				.buildAndExpand(userDTO.getId()).toUri();
+		return ResponseEntity.created(uri).body(userDTO);
 		
 	}
 	
 	@PutMapping(value = "/{id}")
-	public ResponseEntity<UserDTO> update(@PathVariable Long id, @RequestBody UserDTO productDTO){
-		productDTO = service.update(id, productDTO);
-		return ResponseEntity.ok().body(productDTO);
+	public ResponseEntity<UserDTO> update(@PathVariable Long id, @RequestBody UserDTO userDTO){
+		userDTO = service.update(id, userDTO);
+		return ResponseEntity.ok().body(userDTO);
 		
 	}
 	

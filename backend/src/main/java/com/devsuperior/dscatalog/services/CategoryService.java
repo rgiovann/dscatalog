@@ -54,8 +54,8 @@ public class CategoryService {
 	@Transactional
 	public CategoryDTO update(Long id, CategoryDTO categoryDTO) {
 		try {
-			
-			Category proxyEntity = repository.getReferenceById(id);
+			// getReferenceById 
+			Category proxyEntity = repository.getOne(id);
 			proxyEntity.setName(categoryDTO.getName());
 			/*
 			 * -- https://www.baeldung.com/jpa-entity-manager-get-reference --
