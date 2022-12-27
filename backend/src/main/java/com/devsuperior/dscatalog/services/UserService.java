@@ -18,8 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.devsuperior.dscatalog.dto.RoleDTO;
 import com.devsuperior.dscatalog.dto.UserDTO;
-import com.devsuperior.dscatalog.dto.UserInsertDTO;
-import com.devsuperior.dscatalog.dto.UserUpdateDTO;
+import com.devsuperior.dscatalog.dto.UserInsertUpdateDTO;
 import com.devsuperior.dscatalog.entities.Role;
 import com.devsuperior.dscatalog.entities.User;
 import com.devsuperior.dscatalog.repositories.RoleRepository;
@@ -58,7 +57,7 @@ public class UserService {
 	}
 
 	@Transactional
-	public UserDTO insert(UserInsertDTO userInsertDTO) {
+	public UserDTO insert(UserInsertUpdateDTO userInsertDTO) {
 		User entity = new User();
 		entity = DTOToEntity(userInsertDTO);
 		entity.setPassword(pwdEncoder.encode(userInsertDTO.getPassword()));
@@ -67,12 +66,12 @@ public class UserService {
 	}
 
 	@Transactional
-	public UserDTO update(Long id, UserUpdateDTO userUpdateDTO) {
+	public UserDTO update(Long id, UserInsertUpdateDTO userInsertDTO) {
 		Optional<User> obj = userRepository.findById(id);
 		User entity = obj.orElseThrow(() -> new ResourceNotFoundException("Error. Id not found: " + id));
-		entity = DTOToEntity(userUpdateDTO);
+		entity = DTOToEntity(userInsertDTO);
 		entity.setId(id);
-		entity.setPassword(pwdEncoder.encode(userUpdateDTO.getPassword()));
+		entity.setPassword(pwdEncoder.encode(userInsertDTO.getPassword()));
 		entity = userRepository.save(entity);
 		return EntityToDTO(entity);
 

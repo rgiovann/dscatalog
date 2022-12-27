@@ -19,8 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import com.devsuperior.dscatalog.dto.UserDTO;
-import com.devsuperior.dscatalog.dto.UserInsertDTO;
-import com.devsuperior.dscatalog.dto.UserUpdateDTO;
+import com.devsuperior.dscatalog.dto.UserInsertUpdateDTO;
 import com.devsuperior.dscatalog.services.UserService;
 
 // Rest Controller (API)
@@ -48,7 +47,7 @@ public class UserResource {
 	}
 	
 	@PostMapping
-	public ResponseEntity<UserDTO> insert(@Valid @RequestBody UserInsertDTO userInsertDTO){
+	public ResponseEntity<UserDTO> insert(@Valid @RequestBody UserInsertUpdateDTO userInsertDTO){
 		UserDTO userDTO = service.insert(userInsertDTO);
 		URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}")
 				.buildAndExpand(userDTO.getId()).toUri();
@@ -57,8 +56,8 @@ public class UserResource {
 	}
 	
 	@PutMapping(value = "/{id}")
-	public ResponseEntity<UserDTO> update(@PathVariable Long id,@Valid @RequestBody UserUpdateDTO userUpdateDTO){
-		UserDTO userDTO = service.update(id, userUpdateDTO);
+	public ResponseEntity<UserDTO> update(@PathVariable Long id,@Valid @RequestBody UserInsertUpdateDTO userInsertDTO){
+		UserDTO userDTO = service.update(id, userInsertDTO);
 		return ResponseEntity.ok().body(userDTO);
 		
 	}
