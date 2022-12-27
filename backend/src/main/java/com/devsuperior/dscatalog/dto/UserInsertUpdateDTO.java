@@ -2,7 +2,7 @@ package com.devsuperior.dscatalog.dto;
 
 import com.devsuperior.dscatalog.services.validation.UserInsertOrUpdateValid;
 
-//@UserInsertValid
+ 
 @UserInsertOrUpdateValid
 public class UserInsertUpdateDTO extends UserDTO {
 
