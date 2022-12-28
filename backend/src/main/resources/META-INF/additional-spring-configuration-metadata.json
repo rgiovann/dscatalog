@@ -1,0 +1,12 @@
+{"properties": [
+  {
+    "name": "jwt.secret",
+    "type": "java.lang.String",
+    "description": "Secret key JWT token"
+  },
+  {
+    "name": "jwt.duration",
+    "type": "java.lang.String",
+    "description": "JWT token duration in seconds"
+  }
+]}
