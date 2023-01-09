@@ -11,7 +11,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
@@ -34,15 +33,15 @@ public class ProductResourceIT {
 
  
 	private long countTotalProdutcts;
-	private PageImpl<ProductDTO> page;
+	//private PageImpl<ProductDTO> page;
 	private ProductDTO productDTO;
 	
 	private long existingId;
 	private long nonExistingId;
-	private long dependentId;
+	//private long dependentId;
 	private long productBadCategoryId;
 	private String jsonBody;
-	private String jsonBadBody;
+	//private String jsonBadBody;
 	private ProductDTO productBadDTO;
 
 	@BeforeEach
@@ -51,14 +50,14 @@ public class ProductResourceIT {
 		productDTO.getCategories().add(Factory.createGoodDTOCategory());
 		existingId = productDTO.getId();
 		nonExistingId = 100L;
-		dependentId = 50L;
+		//dependentId = 50L;
 		productBadDTO = Factory.createProductDTO();
 		productBadDTO.getCategories().add(Factory.createBadDTOCategory());
 		productBadDTO.setId(productBadCategoryId);
 		productBadCategoryId = Factory.createBadDTOCategory().getId();
 		countTotalProdutcts = 25L;
 		jsonBody = objectMapper.writeValueAsString(productDTO);
-		jsonBadBody = objectMapper.writeValueAsString(productBadDTO);
+		//jsonBadBody = objectMapper.writeValueAsString(productBadDTO);
 	}
 
     @DisplayName("001 - update should return HttpStatus.OK (200) when id exists..")	

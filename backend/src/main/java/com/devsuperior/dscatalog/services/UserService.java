@@ -111,7 +111,7 @@ public class UserService implements UserDetailsService {
 		user.getRoles().clear();
 		for (RoleDTO roleDtoItem : userDTO.getRoles()) {
 			try {
-				Role role = roleRepository.getOne(roleDtoItem.getId());
+				Role role = roleRepository.getReferenceById(roleDtoItem.getId());
 				user.getRoles().add(role);
 			} catch (EntityNotFoundException e) {
 				throw new NestedResourceNotFoundException("Error. Role id not found : " + roleDtoItem.getId());

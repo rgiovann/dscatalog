@@ -1,5 +1,5 @@
 package com.devsuperior.dscatalog.configuration;
-
+ 
 import java.util.Arrays;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,15 +20,15 @@ import com.devsuperior.dscatalog.components.JwtTokenEnhancer;
 
 @Configuration
 @EnableAuthorizationServer
-public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdapter{
-	
+public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdapter {
+
 	@Value("${security.oauth2.client.client-id}")
 	private String clientId;
 	
 	@Value("${security.oauth2.client.client-secret}")
 	private String clientSecret;
 	
-	@Value("${jwt.duration}")	
+	@Value("${jwt.duration}")
 	private Integer jwtDuration;
 	
 	@Autowired
@@ -42,13 +42,10 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
 	
 	@Autowired
 	private AuthenticationManager authenticationManager;
-	
+
 	@Autowired
 	private JwtTokenEnhancer tokenEnhancer;
 	
-	public AuthorizationServerConfig()  {
-	}
-
 	@Override
 	public void configure(AuthorizationServerSecurityConfigurer security) throws Exception {
 		security.tokenKeyAccess("permitAll()").checkTokenAccess("isAuthenticated()");
@@ -59,13 +56,14 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
 		clients.inMemory()
 		.withClient(clientId)
 		.secret(passwordEncoder.encode(clientSecret))
-		.scopes("read","write")
+		.scopes("read", "write")
 		.authorizedGrantTypes("password")
 		.accessTokenValiditySeconds(jwtDuration);
 	}
 
 	@Override
 	public void configure(AuthorizationServerEndpointsConfigurer endpoints) throws Exception {
+
 		TokenEnhancerChain chain = new TokenEnhancerChain();
 		chain.setTokenEnhancers(Arrays.asList(accessTokenConverter, tokenEnhancer));
 		
@@ -74,7 +72,4 @@ public class AuthorizationServerConfig extends AuthorizationServerConfigurerAdap
 		.accessTokenConverter(accessTokenConverter)
 		.tokenEnhancer(chain);
 	}
-	
-	
-
 }

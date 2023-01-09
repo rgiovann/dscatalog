@@ -156,7 +156,7 @@ public class ProductService {
 
 		for (CategoryDTO catDTO : dto.getCategories()) {
 			try {
-				Category category = categoryRepository.getOne(catDTO.getId());
+				Category category = categoryRepository.getReferenceById(catDTO.getId());
 				entity.getCategories().add(category);
 			} catch (EntityNotFoundException e) {
 				throw new NestedResourceNotFoundException("Error. Category id not found : " + catDTO.getId());
