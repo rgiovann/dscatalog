@@ -20,7 +20,7 @@ import com.devsuperior.dscatalog.dto.ProductDTO;
 import com.devsuperior.dscatalog.entities.Category;
 import com.devsuperior.dscatalog.entities.Product;
 import com.devsuperior.dscatalog.repositories.CategoryRepository;
-import com.devsuperior.dscatalog.repositories.ProductRepository;
+import com.devsuperior.dscatalog.repositories.ProductRepositoryBase;
 import com.devsuperior.dscatalog.services.exceptions.DatabaseException;
 import com.devsuperior.dscatalog.services.exceptions.NestedResourceNotFoundException;
 import com.devsuperior.dscatalog.services.exceptions.ResourceNotFoundException;
@@ -32,7 +32,7 @@ import com.devsuperior.dscatalog.services.exceptions.ResourceNotFoundException;
 public class ProductService {
 
 	@Autowired
-	private ProductRepository productRepository;
+	private ProductRepositoryBase productRepository;
 
 	@Autowired
 	private CategoryRepository categoryRepository;
