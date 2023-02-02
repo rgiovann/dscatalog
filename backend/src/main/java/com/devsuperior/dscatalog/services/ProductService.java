@@ -53,7 +53,7 @@ public class ProductService {
     
 	//ACID properties
 	@Transactional(readOnly = true)
-	public Page<ProductDTO> findAllPaged(Long categoryId, Pageable pageRequest) {
+	public Page<ProductDTO> findAllPaged(Long categoryId, String name, Pageable pageRequest) {
 		Optional<Category> myOCategory = categoryRepository.findById(categoryId);
 		Category category = null;
 		// check if category !null AND value isPresent()
@@ -61,7 +61,7 @@ public class ProductService {
 		{
 			category = myOCategory.get();
 		}
-		Page<Product> list = productRepository.findCustomized(category, pageRequest);
+		Page<Product> list = productRepository.findCustomized(category,name, pageRequest);
 		// Page already is an stream since Java 8.X, noo need to convert
 		return list.map(p -> modelMapper.map(p, ProductDTO.class));
 

@@ -32,7 +32,8 @@ public class ProductResource {
 
 	@GetMapping
 	public ResponseEntity<Page<ProductDTO>> findAll( @RequestParam(value = "categoryId", defaultValue = "0") Long categoryId,
-													 Pageable pageable
+													@RequestParam(value = "name", defaultValue = "") String name,
+													Pageable pageable
 //			@RequestParam(value = "page", defaultValue = "0") Integer page,
 //			@RequestParam(value = "linesPerPage", defaultValue = "12") Integer linesPerPage,
 //			@RequestParam(value = "direction", defaultValue = "ASC") String direction,
@@ -43,7 +44,7 @@ public class ProductResource {
 			) {
 	     // http request direction is String, Direction is an enumeration type (so the need of valueOf)
  		
-		Page<ProductDTO> list = service.findAllPaged(categoryId, pageable);
+		Page<ProductDTO> list = service.findAllPaged(categoryId, name.trim(), pageable);
 		return ResponseEntity.ok().body(list);
 
 	}
