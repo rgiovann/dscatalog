@@ -1,5 +1,7 @@
 package com.devsuperior.dscatalog.services;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 import javax.persistence.EntityNotFoundException;
@@ -55,13 +57,13 @@ public class ProductService {
 	@Transactional(readOnly = true)
 	public Page<ProductDTO> findAllPaged(Long categoryId, String name, Pageable pageRequest) {
 		Optional<Category> myOCategory = categoryRepository.findById(categoryId);
-		Category category = null;
+		List<Category> categories = null;
 		// check if category !null AND value isPresent()
 		if (myOCategory != null && myOCategory.isPresent())
 		{
-			category = myOCategory.get();
+			categories = Arrays.asList(myOCategory.get());
 		}
-		Page<Product> list = productRepository.findCustomized(category,name, pageRequest);
+		Page<Product> list = productRepository.findCustomized(categories,name, pageRequest);
 		// Page already is an stream since Java 8.X, noo need to convert
 		return list.map(p -> modelMapper.map(p, ProductDTO.class));
 
