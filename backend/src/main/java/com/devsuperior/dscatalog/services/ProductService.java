@@ -30,7 +30,7 @@ import com.devsuperior.dscatalog.services.exceptions.ResourceNotFoundException;
 public class ProductService {
 
 	@Autowired
-	private ProductRepository repository;
+	private ProductRepository productRepository;
 
 	@Autowired
 	private CategoryRepository categoryRepository;
@@ -53,8 +53,15 @@ public class ProductService {
     
 	//ACID properties
 	@Transactional(readOnly = true)
-	public Page<ProductDTO> findAllPaged(Pageable pageRequest) {
-		Page<Product> list = repository.findAll(pageRequest);
+	public Page<ProductDTO> findAllPaged(Long categoryId, Pageable pageRequest) {
+		Optional<Category> myOCategory = categoryRepository.findById(categoryId);
+		Category category = null;
+		// check if category !null AND value isPresent()
+		if (myOCategory != null && myOCategory.isPresent())
+		{
+			category = myOCategory.get();
+		}
+		Page<Product> list = productRepository.findCustomized(category, pageRequest);
 		// Page already is an stream since Java 8.X, noo need to convert
 		return list.map(p -> modelMapper.map(p, ProductDTO.class));
 
@@ -74,7 +81,7 @@ public class ProductService {
 	
 	@Transactional(readOnly = true)
 	public ProductDTO findById(Long id) {
-		Optional<Product> obj = repository.findById(id);
+		Optional<Product> obj = productRepository.findById(id);
 		Product entity = obj.orElseThrow(() -> new ResourceNotFoundException("Error. Id not found: " + id));
 		ProductDTO productDTO = modelMapper.map(entity, ProductDTO.class);
 		productDTO.setCategoriesProductDTO(entity.getCategories());
@@ -90,7 +97,7 @@ public class ProductService {
 		Product entity = new Product();
 		entity = modelMapper.map(productDTO, Product.class);
 		copyDtoToEntity(productDTO, entity);
-		entity = repository.save(entity); // reposity.save() returns a reference to object saved in DB
+		entity = productRepository.save(entity); // reposity.save() returns a reference to object saved in DB
 		return modelMapper.map(entity, ProductDTO.class);
 	}
 
@@ -101,7 +108,7 @@ public class ProductService {
 	@Transactional
 	public ProductDTO update(Long id, ProductDTO productDTO) {
 
-			Optional<Product> obj = repository.findById(id);
+			Optional<Product> obj = productRepository.findById(id);
 			Product entity = obj.orElseThrow(() -> new ResourceNotFoundException("Error. Id not found: " + id));
 			
 			entity = modelMapper.map(productDTO, Product.class);
@@ -128,7 +135,7 @@ public class ProductService {
 			 * 
 			 */
 
-			entity = repository.save(entity);
+			entity = productRepository.save(entity);
 			return modelMapper.map(entity, ProductDTO.class);
  
 	}
@@ -143,7 +150,7 @@ public class ProductService {
 	//@Transactional
 	public void delete(Long id) {
 		try {
-			repository.deleteById(id);
+			productRepository.deleteById(id);
 		} catch (EmptyResultDataAccessException e) {
 			throw new ResourceNotFoundException("Error. Id not found: " + id);
 		} catch (DataIntegrityViolationException e) {

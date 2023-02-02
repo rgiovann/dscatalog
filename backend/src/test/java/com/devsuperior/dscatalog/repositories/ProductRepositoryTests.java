@@ -37,7 +37,7 @@ public class ProductRepositoryTests {
 
 		repository.deleteById(existingId);
 
-		// if object not presen BEFORE delete, will throw exception
+		// if object not present BEFORE delete, will throw exception
 		Optional<Product> result = repository.findById(existingId);
 		Assertions.assertFalse(result.isPresent());
 
