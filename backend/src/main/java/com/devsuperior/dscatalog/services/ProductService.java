@@ -20,7 +20,7 @@ import com.devsuperior.dscatalog.dto.ProductDTO;
 import com.devsuperior.dscatalog.entities.Category;
 import com.devsuperior.dscatalog.entities.Product;
 import com.devsuperior.dscatalog.repositories.CategoryRepository;
-import com.devsuperior.dscatalog.repositories.ProductRepositoryBase;
+import com.devsuperior.dscatalog.repositories.ProductRepository;
 import com.devsuperior.dscatalog.services.exceptions.DatabaseException;
 import com.devsuperior.dscatalog.services.exceptions.NestedResourceNotFoundException;
 import com.devsuperior.dscatalog.services.exceptions.ResourceNotFoundException;
@@ -32,7 +32,7 @@ import com.devsuperior.dscatalog.services.exceptions.ResourceNotFoundException;
 public class ProductService {
 
 	@Autowired
-	private ProductRepositoryBase productRepository;
+	private ProductRepository productRepository;
 
 	@Autowired
 	private CategoryRepository categoryRepository;
@@ -56,16 +56,14 @@ public class ProductService {
 	//ACID properties
 	@Transactional(readOnly = true)
 	public Page<ProductDTO> findAllPaged(Long categoryId, String name, Pageable pageRequest) {
-		Optional<Category> myOCategory = categoryRepository.findById(categoryId);
-		List<Category> categories = null;
-		// check if category !null AND value isPresent()
-		if (myOCategory != null && myOCategory.isPresent())
-		{
-			categories = Arrays.asList(myOCategory.get());
-		}
-		Page<Product> list = productRepository.findCustomized(categories,name, pageRequest);
-		// Page already is an stream since Java 8.X, noo need to convert
-		return list.map(p -> modelMapper.map(p, ProductDTO.class));
+		List<Category> categories = (categoryId == 0) ? null : Arrays.asList(categoryRepository.getReferenceById(categoryId));
+		Page<Product> page = productRepository.findProductsWithFilter(categories,name, pageRequest);
+		productRepository.findProductsWithCategories(page.getContent());
+		return page.map(p -> {ProductDTO pDTO = modelMapper.map(p, ProductDTO.class); 
+										 pDTO.setCategoriesProductDTO(p.getCategories()); 
+										 return pDTO;
+							 }
+		                );
 
 	}
     
